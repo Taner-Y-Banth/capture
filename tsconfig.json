@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "module": "es6",
+        "rootDir": "src",
+        "outDir": "dist",
+        "lib": ["DOM", "ES2022"]
+    },
+    "include": ["src/"],
+    "exclude": ["node_modules", "dist"]
+}
