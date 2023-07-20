@@ -1,13 +1,23 @@
-interface HTMLMediaElementWithCaptureStream extends HTMLMediaElement{
+import { NstrumentaBrowserClient } from "nstrumenta/dist/browser/client";
+
+const nstClient = new NstrumentaBrowserClient();
+nstClient.connect();
+interface HTMLMediaElementWithCaptureStream extends HTMLMediaElement {
   captureStream(): MediaStream;
   mozCaptureStream(): MediaStream;
 }
 
-let preview = document.getElementById("preview") as HTMLMediaElementWithCaptureStream;
-let recording = document.getElementById("recording") as HTMLMediaElementWithCaptureStream;
+let preview = document.getElementById(
+  "preview"
+) as HTMLMediaElementWithCaptureStream;
+let recording = document.getElementById(
+  "recording"
+) as HTMLMediaElementWithCaptureStream;
 let startButton = document.getElementById("startButton") as HTMLButtonElement;
 let stopButton = document.getElementById("stopButton") as HTMLButtonElement;
-let downloadButton = document.getElementById("downloadButton") as HTMLAnchorElement;
+let downloadButton = document.getElementById(
+  "downloadButton"
+) as HTMLAnchorElement;
 let logElement = document.getElementById("log");
 
 let recordingTimeMS = 5000;
@@ -71,7 +81,7 @@ startButton.addEventListener(
         downloadButton.download = "RecordedVideo.webm";
 
         log(
-          `Successfully recorded ${recordedBlob.size} bytes of ${recordedBlob.type} media.`,
+          `Successfully recorded ${recordedBlob.size} bytes of ${recordedBlob.type} media.`
         );
       })
       .catch((error) => {
@@ -82,7 +92,7 @@ startButton.addEventListener(
         }
       });
   },
-  false,
+  false
 );
 
 stopButton.addEventListener(
@@ -90,5 +100,5 @@ stopButton.addEventListener(
   () => {
     stopStream(preview.srcObject);
   },
-  false,
+  false
 );
