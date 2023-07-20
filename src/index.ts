@@ -1,7 +1,3 @@
-import { NstrumentaBrowserClient } from "nstrumenta/dist/browser/client";
-
-const nstClient = new NstrumentaBrowserClient();
-nstClient.connect();
 interface HTMLMediaElementWithCaptureStream extends HTMLMediaElement {
   captureStream(): MediaStream;
   mozCaptureStream(): MediaStream;
