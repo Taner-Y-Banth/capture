@@ -1,14 +1,15 @@
-import './style.css'; 
-import { NstrumentaBrowserClient } from "nstrumenta/dist/browser/client";
+import './style.css';
+import { gamePad } from './gamepadInputs';// import { NstrumentaBrowserClient } from "nstrumenta/dist/browser/client";
 
-const nstClient = new NstrumentaBrowserClient();
-nstClient.connect();
-
+// const nstClient = new NstrumentaBrowserClient();
+// nstClient.connect();
 interface HTMLMediaElementWithCaptureStream extends HTMLMediaElement {
   captureStream(): MediaStream;
   mozCaptureStream(): MediaStream;
 }
 
+let startInputRecording = document.getElementById('startBtn') as HTMLButtonElement;
+let stopInputRecording = document.getElementById('stopBtn') as HTMLButtonElement;
 let preview = document.getElementById(
   "preview"
 ) as HTMLMediaElementWithCaptureStream;
@@ -76,7 +77,7 @@ startButton.addEventListener(
         recording.src = URL.createObjectURL(recordedBlob);
         downloadButton.href = recording.src;
         downloadButton.download = `${Date.now()}.webm`;
-        nstClient.storage.upload({filename: downloadButton.download, data: recordedBlob, meta: {}});
+        // nstClient.storage.upload({filename: downloadButton.download, data: recordedBlob, meta: {}});
         console.log(
           `Successfully recorded ${recordedBlob.size} bytes of ${recordedBlob.type} media.`
         );
@@ -99,3 +100,63 @@ stopButton.addEventListener(
   },
   false
 );
+
+const data: any[] = [];
+
+function recordData() {
+  const pad = 0;
+
+  if (gamePad.gamepads[pad]) {
+    const timestamp = new Date().toISOString();
+    const panX = gamePad.gamepads[pad].axes[0];
+    const panY = gamePad.gamepads[pad].axes[1];
+    const panZ = gamePad.gamepads[pad].axes[2];
+    const rollX = gamePad.gamepads[pad].axes[3];
+    const rollY = gamePad.gamepads[pad].axes[4];
+    const rollZ = gamePad.gamepads[pad].axes[5];
+
+    const buttons = gamePad.gamepads[pad].buttons.map((button, index) => ({
+      index,
+      pressed: button.pressed,
+    }));
+
+    const dataEntry = {
+      timestamp,
+      pan: { x: panX, y: panY, z: panZ },
+      roll: { x: rollX, y: rollY, z: rollZ },
+      buttons,
+    };
+
+    data.push(dataEntry);
+  }
+}
+
+function createDownloadLink() {
+  const dataToWrite = JSON.stringify(data, null, 2);
+  const blob = new Blob([dataToWrite], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const downloadLink = document.createElement('a');
+  downloadLink.href = url;
+  downloadLink.download = 'gamepadData.json';
+  downloadLink.textContent = 'Download Data';
+  document.body.appendChild(downloadLink);
+}
+
+startInputRecording.addEventListener('click', () => {
+  startInputRecording.disabled = true;
+  stopInputRecording.disabled = false;
+  const updateIntervalMs = 100; // Adjust the interval time as desired (100 milliseconds in this case)
+
+  const intervalId = setInterval(() => {
+    gamePad.update();
+    recordData();
+  }, updateIntervalMs);
+
+  stopInputRecording.addEventListener('click', () => {
+    clearInterval(intervalId);
+    stopInputRecording.disabled = true;
+    createDownloadLink();
+    console.log("Recorded")
+  });
+});
