@@ -1,8 +1,9 @@
-import './style.css';
+import './style.css'; 
 import { NstrumentaBrowserClient } from "nstrumenta/dist/browser/client";
 
 const nstClient = new NstrumentaBrowserClient();
 nstClient.connect();
+
 interface HTMLMediaElementWithCaptureStream extends HTMLMediaElement {
   captureStream(): MediaStream;
   mozCaptureStream(): MediaStream;
@@ -19,13 +20,8 @@ let stopButton = document.getElementById("stopButton") as HTMLButtonElement;
 let downloadButton = document.getElementById(
   "downloadButton"
 ) as HTMLAnchorElement;
-let logElement = document.getElementById("log");
 
 let recordingTimeMS = 5000;
-
-function log(msg) {
-  logElement.innerHTML += `${msg}\n`;
-}
 
 function wait(delayInMS) {
   return new Promise((resolve) => setTimeout(resolve, delayInMS));
@@ -33,11 +29,11 @@ function wait(delayInMS) {
 
 function startRecording(stream, lengthInMS) {
   let recorder = new MediaRecorder(stream);
-  let data = [];
+  let data: Blob[] = [];
 
   recorder.ondataavailable = (event) => data.push(event.data);
   recorder.start();
-  log(`${recorder.state} for ${lengthInMS / 1000} seconds…`);
+  console.log(`${recorder.state} for ${lengthInMS / 1000} seconds…`);
 
   let stopped = new Promise((resolve, reject) => {
     recorder.onstop = resolve;
@@ -79,17 +75,17 @@ startButton.addEventListener(
         let recordedBlob = new Blob(recordedChunks, { type: "video/webm" });
         recording.src = URL.createObjectURL(recordedBlob);
         downloadButton.href = recording.src;
-        downloadButton.download = "RecordedVideo.webm";
-
-        log(
+        downloadButton.download = `${Date.now()}.webm`;
+        nstClient.storage.upload({filename: downloadButton.download, data: recordedBlob, meta: {}});
+        console.log(
           `Successfully recorded ${recordedBlob.size} bytes of ${recordedBlob.type} media.`
         );
       })
       .catch((error) => {
         if (error.name === "NotFoundError") {
-          log("Camera or microphone not found. Can't record.");
+          console.log("Camera or microphone not found. Can't record.");
         } else {
-          log(error);
+          console.log(error);
         }
       });
   },
